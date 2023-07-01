@@ -1,0 +1,205 @@
+{% extends 'main.html' %}
+{% block content %}
+<style>
+
+  :root {
+    --color-light-gray: #999999;
+  }
+  .room__message {
+    background-color: #51546e;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .room__message form {
+    flex-grow: 1;
+    display: flex;
+  }
+  
+  .room__message textarea {
+    resize: none;
+    background-color: var(--color-dark-light);
+    color: var(--color-light);
+    border: none;
+    outline: none;
+    border-radius: 0.7rem;
+    height: 4.5rem;
+    width: 100%;
+    margin-top: -1rem;
+    padding: 1.2rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+    position: relative;
+  }
+  
+  .room__message button {
+    margin-left: 10px;
+    padding: 8px 15px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .room__message button::before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 0 8px 12px;
+    border-color: transparent transparent transparent #ffffff;
+  }
+  
+  .room__message button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .room__message button:focus {
+    outline: none;
+  }
+  .room__message textarea::placeholder {
+    color: var(--color-light-gray);
+  }
+  
+  
+  
+
+
+
+</style>
+
+<main class="profile-page layout layout--2">
+    <div class="container">
+      <!-- Room Start -->
+      <div class="room">
+        <div class="room__top">
+          <div class="room__topLeft">
+            <a href="{% url 'home' %}">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                <title>arrow-left</title>
+                <path
+                  d="M13.723 2.286l-13.723 13.714 13.719 13.714 1.616-1.611-10.96-10.96h27.625v-2.286h-27.625l10.965-10.965-1.616-1.607z"
+                ></path>
+              </svg>
+            </a>
+            <h3>Messenger</h3>
+          </div>
+          
+        </div>
+        <div class="room__box scroll">
+          <div class="room__header scroll">
+            <div class="room__info">
+              <h3>{{user.name}}</h3>
+              
+            </div>
+            <div class="room__hosted">
+              <p>CHAT WITH</p>
+              <a href="{% url 'user-profile' user.id %}" class="room__author"> 
+                <div class="avatar avatar--small">
+                  <img src="{{user.avatar.url}}" />
+                </div>
+                <span>@{{user.username}}</span>
+              </a>
+            </div>
+             <div class="room__details">
+              <p>Bio: {{user.bio }}</p>
+              
+            </div>
+            <span class="room__topics"><a href="">MENU</a></span>
+          </div>
+          <div class="room__conversation">
+            <div class="threads scroll">
+
+              {% for message_user in user_messages %}
+              <div class="thread">
+                <div class="thread__top">
+                  <div class="thread__author">
+                    <a href="{% url 'user-profile' message_user.user.id %}" class="thread__authorInfo">
+                      <div class="avatar avatar--small">
+                        <img src="{{message_user.user.avatar.url}}" />
+                      </div>
+                      <span>@{{ message_user.user.username }}</span>
+                    </a>
+                    <span class="thread__date">{{message_user.created|timesince}} ago</span>
+                  </div>
+                  {% if request.user == message_user.user %}
+                  <a href = "{% url 'delete-message' message_user.id %}">
+                    <div class="thread__delete">
+                      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                        <title>remove</title>
+                        <path
+                          d="M27.314 6.019l-1.333-1.333-9.98 9.981-9.981-9.981-1.333 1.333 9.981 9.981-9.981 9.98 1.333 1.333 9.981-9.98 9.98 9.98 1.333-1.333-9.98-9.98 9.98-9.981z"
+                        ></path>
+                      </svg>
+                    </div>
+                  </a>
+                  {% endif %}
+                </div>
+                <div class="thread__details">
+                  
+                    {{message_user.body}}
+                  
+                
+                </div>
+              </div>
+              {% endfor %}
+
+            </div>
+          </div>
+        </div>
+        <div class="room__message">
+          <form method="POST" action="{% url 'messenger' pk=user.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="recipient_id" value="{{ user.id }}" />
+            <textarea name="body" rows="1" placeholder="Write your message here" id="message-input"></textarea>
+            <button type="submit"></button>
+          </form>
+        </div>
+        
+        <script>
+          // Get the message input element
+          const messageInput = document.getElementById('message-input');
+        
+          // Add an event listener to the input element for the 'keydown' event
+          messageInput.addEventListener('keydown', function(event) {
+            // Check if the Enter key is pressed (key code 13)
+            if (event.keyCode === 13) {
+              // Prevent the default form submission behavior
+              event.preventDefault();
+              
+              // Submit the form
+              this.closest('form').submit();
+            }
+          });
+        </script>
+        
+      </div>
+      <!-- Room End -->
+
+      <!--   Start -->
+      <div class="participants">
+        <h3 class="participants__top">CHAT WITH <span>({{ logged_in_users|length }} Joined)</span></h3>
+        <div class="participants__list scroll">
+          {% for user in logged_in_users %}
+          <a href="{% url 'user-profile' user.id %}" class="participant">
+            <div class="avatar avatar--medium">
+              <img src="{{ user.avatar.url }}" />
+            </div>
+            <p>
+              {{ user.name }}
+              <span>@{{ user.username }}</span>
+            </p>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      
+         
+      <!--  End -->
+    </div>
+  </main>
+  {% comment %} <script src="script.js"></script> {% endcomment %}
+
+
+{% endblock content %}

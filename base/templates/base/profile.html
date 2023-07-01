@@ -1,0 +1,121 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<style>
+
+  
+  .message-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: black;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .message-button:hover {
+    background-color: #87CEEB;
+  }
+  
+</style>
+  <main class="profile-page layout layout--3">
+    <div class="container">
+      <!-- Topics Start -->
+      {% include 'base/topics_component.html' %}
+      <!-- Topics End -->
+
+      <!-- Room List Start -->
+      <div class="roomList">
+        <div class="profile">
+          <div class="profile__avatar">
+            <div class="avatar avatar--large active">
+              <img src="{{user.avatar.url}}"/>
+            </div>
+            {% if request.user == user %}
+            <a href = "{% url 'delete-avatar' %}">
+              <div class="thread__delete">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                  <title>Delete Profile</title>
+                  <path
+                    d="M27.314 6.019l-1.333-1.333-9.98 9.981-9.981-9.981-1.333 1.333 9.981 9.981-9.981 9.98 1.333 1.333 9.981-9.98 9.98 9.98 1.333-1.333-9.98-9.98 9.98-9.981z"
+                  ></path>
+                </svg>
+              </div>
+            </a> 
+            {% endif %}
+
+          </div>
+          <div class="profile__info">
+            <h3>{{user.name}}</h3>
+            <p>@{{user.username}}</p>
+            {% if request.user != user %}
+              <a href="{% url 'messenger' user.id %}" class="message-button">Message</a>
+            {% endif %}
+
+
+            {% if request.user != user %}
+              {% if is_following %}
+                <form action="{% url 'unfollow' pk=user.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Unfollow</button>
+                </form>
+              {% else %}
+                <form action="{% url 'follow' pk=user.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn--main btn--pill">Follow</button>
+                </form>
+              {% endif %}
+            {% endif %}
+            <div>
+              <h1>Followers ({{ followers_count }})</h1>
+              {% comment %} <ul>
+                {% for follower in followers_list %}
+                  <li>{{ follower.username }}</li>
+                {% empty %}
+                  <li>No followers yet.</li>
+                {% endfor %}
+              </ul> {% endcomment %}
+            </div>
+            
+            <div>
+              <h1>Following ({{ following_count }})</h1>
+              {% comment %} <ul>
+                {% for following_user in following_list %}
+                  <li>{{ following_user.username }}</li>
+                {% empty %}
+                  <li>Not following anyone yet.</li>
+                {% endfor %}
+              </ul> {% endcomment %}
+            </div>
+
+
+            {% if request.user == user %}
+            <a href="{% url 'update-user' %}" class="btn btn--main btn--pill">Edit Profile</a>
+            {% endif %}
+          </div>
+          <div class="profile__about">
+            <h3>About</h3>
+            <p>
+             {{user.bio}}
+            </p>
+          </div>
+        </div>
+
+        <div class="roomList__header">
+          <div>
+            <h2>Study Rooms Hosted by {{user.username}}</a>
+            </h2>
+          </div>
+        </div>
+        {% include 'base/feed_component.html' %}
+
+      </div>
+      <!-- Room List End -->
+
+      <!-- Activities Start -->
+      {% include 'base/activity_component.html' %}
+      <!-- Activities End -->
+    </div>
+  </main>
+{% endblock content %} 
